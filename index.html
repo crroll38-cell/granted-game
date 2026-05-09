@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GRANTED.</title>
+<link rel="icon" type="image/svg+xml" href="favicons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicons/apple-touch-icon.png">
+<link rel="manifest" href="favicons/site.webmanifest">
+<meta name="theme-color" content="#000007">
+<style>
+@import url('https://cdn.jsdelivr.net/npm/geist@1.4.1/dist/fonts/geist-sans/style.css');
+@import url('https://cdn.jsdelivr.net/npm/geist@1.4.1/dist/fonts/geist-mono/style.css');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#030305;background:radial-gradient(circle at 50% 46%,rgba(130,100,255,.11) 0%,rgba(130,100,255,.03) 11%,transparent 28%),radial-gradient(circle at 35% 28%,rgba(0,240,255,.16) 0%,rgba(0,89,255,.05) 26%,transparent 48%),radial-gradient(circle at 70% 66%,rgba(170,68,255,.13) 0%,rgba(170,68,255,.035) 24%,transparent 48%),radial-gradient(circle at center,#0a0e20 0%,#050508 52%,#010103 100%);font-family:'Geist Sans',sans-serif;color:#fff}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0%,rgba(0,240,255,.035) 28%,transparent 46%,rgba(170,68,255,.03) 63%,transparent 100%),repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0px,rgba(255,255,255,.015) 1px,transparent 1px,transparent 4px);mix-blend-mode:screen;opacity:.65;z-index:2}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at center,transparent 0%,transparent 48%,rgba(0,0,0,.55) 100%);z-index:3}
+#intro{position:fixed;inset:0;z-index:100;background:#000}
+#intro canvas{display:block;width:100%;height:100%}
+#app{position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1}
+#scene-fade{position:fixed;inset:0;z-index:2;background:#000;pointer-events:none;transition:opacity .5s ease}
+#scene-fade.out{opacity:0}
+.game-area.visible{opacity:1}
+.ui-layer{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;padding:24px 28px;pointer-events:none;opacity:0;transition:opacity .6s ease .2s}
+.ui-layer.visible{opacity:1}
+.header{display:flex;justify-content:space-between;align-items:flex-start;text-transform:uppercase;letter-spacing:.2em}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-brand__logo{height:24px;width:auto;display:block;filter:drop-shadow(0 0 8px rgba(0,240,255,.4))}
+.nav-brand__name{font-family:'Geist Sans',sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;line-height:1;color:#00f0ff;text-shadow:0 0 10px rgba(0,240,255,.5),0 0 30px rgba(0,240,255,.22)}
+.nav-brand__caret{display:inline-block;width:7px;height:14px;margin-left:2px;background:#00f0ff;vertical-align:-2px;animation:nav-caret 1.1s steps(2,end) infinite;box-shadow:0 0 8px rgba(0,240,255,.5)}
+@keyframes nav-caret{0%,50%{opacity:1}51%,100%{opacity:0}}
+.title-box p{margin:5px 0 0;font-size:.72rem;color:rgba(170,136,255,.7);font-family:'Geist Mono',monospace;text-shadow:0 0 12px rgba(170,136,255,.3)}
+.status{font-family:'Geist Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.5);text-align:right;padding:10px 14px;border:1px solid rgba(0,240,255,.12);border-radius:12px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);line-height:1.7}
+.footer{display:flex;justify-content:space-between;align-items:flex-end}
+.hint{color:rgba(0,240,255,.6);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:10px;text-shadow:0 0 12px rgba(0,240,255,.2)}
+.hint::before{content:'';display:inline-block;width:30px;height:1px;background:linear-gradient(90deg,rgba(0,240,255,.15),rgba(170,136,255,.7));box-shadow:0 0 12px rgba(170,136,255,.35)}
+.frame-corners{position:absolute;top:16px;left:16px;right:16px;bottom:16px;border:1px solid rgba(255,255,255,.05);pointer-events:none;box-shadow:inset 0 0 50px rgba(0,240,255,.02)}
+.frame-corners::before,.frame-corners::after{content:'';position:absolute;width:18px;height:18px;border-color:rgba(170,136,255,.5);border-style:solid;filter:drop-shadow(0 0 8px rgba(170,136,255,.3))}
+.frame-corners::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.frame-corners::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.game-area{position:absolute;inset:0;z-index:15;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .6s ease .2s}
+.state{grid-area:1/1;width:min(88vw,500px);display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .6s ease}
+.state.active{opacity:1;pointer-events:auto}
+.wish-cta{text-align:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.cta-main{display:block;font-size:clamp(1.6rem,5vw,2.6rem);font-weight:700;letter-spacing:.3em;color:#00f0ff;text-shadow:0 0 30px rgba(0,240,255,.5),0 0 60px rgba(0,240,255,.18);animation:breathe 3s ease-in-out infinite}
+.cta-sub{display:block;font-size:.82rem;color:rgba(170,136,255,.65);font-family:'Geist Mono',monospace;letter-spacing:.25em;margin-top:12px;text-shadow:0 0 12px rgba(170,136,255,.25)}
+@keyframes breathe{0%,100%{opacity:.82;transform:scale(1)}50%{opacity:1;transform:scale(1.025)}}
+.input-box{width:100%;background:rgba(0,0,0,.38);border:1px solid rgba(0,240,255,.14);border-radius:14px;padding:22px;backdrop-filter:blur(8px)}
+.input-label{display:block;font-size:.72rem;letter-spacing:.2em;color:rgba(0,240,255,.55);margin-bottom:10px;text-transform:uppercase}
+#wish-text{width:100%;min-height:76px;padding:14px 16px;background:rgba(0,0,0,.32);border:1px solid rgba(0,240,255,.18);border-radius:10px;color:#fff;font-family:'Geist Mono',monospace;font-size:15px;line-height:1.6;resize:none;outline:none;transition:border-color .3s}
+#wish-text:focus{border-color:rgba(0,240,255,.45)}
+#wish-text::placeholder{color:rgba(255,255,255,.22)}
+.input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.char-count{font-family:'Geist Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.3)}
+.btn{padding:11px 28px;background:transparent;border:1px solid rgba(0,240,255,.35);border-radius:8px;color:#00f0ff;font-family:'Geist Sans',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.18em;cursor:pointer;transition:all .3s}
+.btn:hover:not(:disabled){background:rgba(0,240,255,.08);border-color:rgba(0,240,255,.65);box-shadow:0 0 20px rgba(0,240,255,.12)}
+.btn:disabled{opacity:.25;cursor:not-allowed}
+.thinking{text-align:center}
+.thinking-label{font-size:.82rem;letter-spacing:.2em;color:rgba(170,136,255,.75);text-shadow:0 0 15px rgba(170,136,255,.25);text-transform:uppercase;animation:breathe 2s ease-in-out infinite}
+.thinking-dots{margin-left:2px}
+.dot{display:inline-block;font-size:1.1rem;color:rgba(170,136,255,.75);animation:blink 1.4s infinite}
+.dot:nth-child(2){animation-delay:.3s}
+.dot:nth-child(3){animation-delay:.6s}
+@keyframes blink{0%,100%{opacity:.15}50%{opacity:1}}
+.result-box{width:100%;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px 22px;backdrop-filter:blur(8px);display:flex;flex-direction:column;max-height:70vh;overflow-y:auto}
+.narration{font-family:'Geist Mono',monospace;font-size:14px;line-height:1.85;color:rgba(255,255,255,.88);text-shadow:0 0 6px rgba(0,240,255,.08);min-height:40px;max-height:25vh;overflow-y:auto;white-space:pre-wrap;margin-bottom:8px;flex-shrink:0}
+.result-divider{width:60%;height:1px;background:linear-gradient(90deg,transparent,rgba(170,136,255,.3),transparent);margin:8px auto 0;flex-shrink:0}
+.cursor{display:inline-block;width:2px;height:1.1em;background:#00f0ff;margin-left:2px;vertical-align:text-bottom;animation:cursorBlink .6s step-end infinite}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+.verdict-row{text-align:center;margin-top:20px;opacity:0;transition:opacity .5s ease}
+.verdict-row.show{opacity:1}
+.verdict-badge{display:inline-block;padding:8px 26px;font-weight:700;font-size:clamp(1.3rem,4vw,1.9rem);letter-spacing:.3em;border:2px solid;border-radius:4px;text-transform:uppercase}
+.verdict-badge.corrupted{color:#ff3344;border-color:#ff3344;text-shadow:0 0 20px rgba(255,51,68,.55);box-shadow:0 0 30px rgba(255,51,68,.12)}
+.verdict-badge.airtight{color:#00ff88;border-color:#00ff88;text-shadow:0 0 20px rgba(0,255,136,.55);box-shadow:0 0 30px rgba(0,255,136,.12)}
+.stamp{animation:stamp .4s ease-out forwards}
+@keyframes stamp{0%{transform:scale(1.7);opacity:0}60%{transform:scale(.96);opacity:1}100%{transform:scale(1);opacity:1}}
+.detail-row{margin-top:14px;opacity:0;transition:opacity .5s ease}
+.detail-row.show{opacity:1}
+.loophole{font-family:'Geist Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.45);line-height:1.65}
+.loophole-label{color:rgba(170,136,255,.65);margin-right:6px;letter-spacing:.1em}
+.rating-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.rating-label{font-family:'Geist Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.35);letter-spacing:.1em;white-space:nowrap}
+.rating-bar{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;max-width:130px}
+.rating-fill{height:100%;border-radius:3px;width:0;transition:width 1s ease-out;background:linear-gradient(90deg,#ff3344,#ffcc44,#00ff88)}
+.rating-num{font-family:'Geist Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.5)}
+.btn-row{margin-top:18px;opacity:0;transition:opacity .5s ease;align-self:center}
+.btn-row.show{opacity:1}
+.error-box{text-align:center}
+.error-text{font-family:'Geist Mono',monospace;font-size:.82rem;color:rgba(255,100,100,.75);margin-bottom:16px;line-height:1.6}
+.footer-btns{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
+.footer-btn{padding:14px 28px;background:rgba(0,0,0,.35);border:1px solid rgba(0,240,255,.18);border-radius:10px;color:rgba(0,240,255,.55);font-family:'Geist Mono',monospace;font-size:.85rem;font-weight:600;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;transition:all .3s;backdrop-filter:blur(4px)}
+.footer-btn:hover{border-color:rgba(0,240,255,.5);color:rgba(0,240,255,.9);box-shadow:0 0 16px rgba(0,240,255,.1)}
+.donate-overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);display:none;place-items:center}
+.donate-overlay.open{display:grid}
+.donate-modal{background:rgba(6,6,18,.95);border:1px solid rgba(0,240,255,.12);border-radius:16px;padding:36px 32px;width:min(92vw,420px);text-align:center;position:relative;box-shadow:0 0 60px rgba(0,240,255,.06)}
+.donate-x{position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.35);font-size:20px;cursor:pointer;padding:4px 8px;line-height:1}
+.donate-x:hover{color:#fff}
+.donate-title{font-family:'Geist Sans',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:.22em;color:#00f0ff;text-transform:uppercase;text-shadow:0 0 15px rgba(0,240,255,.35)}
+.donate-sub{font-family:'Geist Mono',monospace;font-size:.82rem;color:rgba(255,255,255,.6);margin-top:8px;letter-spacing:.1em}
+.donate-qr{margin:20px auto 16px;display:block;border-radius:8px;background:rgba(0,0,0,.3);padding:8px}
+.donate-addr-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border:1px solid rgba(0,240,255,.1);border-radius:8px;padding:10px 12px;margin-bottom:16px}
+.donate-addr{font-family:'Geist Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:left;user-select:all}
+.donate-copy{padding:8px 16px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.2);border-radius:6px;color:#00f0ff;font-family:'Geist Mono',monospace;font-size:.72rem;cursor:pointer;white-space:nowrap;letter-spacing:.1em;transition:all .2s}
+.donate-copy:hover{background:rgba(0,240,255,.12);border-color:rgba(0,240,255,.45)}
+.donate-amounts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.donate-amt{padding:12px 20px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.75);font-family:'Geist Sans',sans-serif;font-size:.9rem;font-weight:600;text-decoration:none;letter-spacing:.08em;transition:all .2s;cursor:pointer;display:block}
+.donate-amt:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.45);color:#fff}
+.donate-net{font-family:'Geist Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.45);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+.support-link{display:inline-block;margin-top:6px;color:#aa88ff;cursor:pointer;pointer-events:auto;letter-spacing:.15em;transition:all .3s;font-size:.78rem;font-weight:600}
+.support-link:hover{color:#00f0ff;text-shadow:0 0 10px rgba(0,240,255,.4)}
+.donate-note{font-family:'Geist Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:12px;padding:0 8px}
+.settings-body{text-align:left;margin-top:16px}
+.settings-row{margin-bottom:12px}
+.settings-label{display:block;font-family:'Geist Mono',monospace;font-size:.72rem;color:rgba(0,240,255,.5);letter-spacing:.12em;margin-bottom:6px;text-transform:uppercase}
+.settings-select,.settings-input{width:100%;padding:12px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(0,240,255,.15);border-radius:8px;color:#fff;font-family:'Geist Mono',monospace;font-size:.85rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.settings-select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%2300f0ff' fill-opacity='.4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.settings-select:focus,.settings-input:focus{border-color:rgba(0,240,255,.4)}
+.settings-select option{background:#0a0a1a;color:#fff}
+.settings-note{font-family:'Geist Mono',monospace;font-size:.72rem;color:rgba(0,240,255,.5);margin-top:12px;text-align:center;min-height:1.2em}
+.help-body{text-align:left;margin-top:16px}
+.help-section{margin-bottom:16px}
+.help-heading{font-family:'Geist Sans',sans-serif;font-size:.9rem;font-weight:700;color:#aa88ff;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.help-body p{font-family:'Geist Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.55);line-height:1.75;margin:0 0 8px}
+.help-body ol{font-family:'Geist Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.55);line-height:1.85;padding-left:20px;margin:8px 0}
+.help-body li{margin-bottom:3px}
+.help-body a{text-decoration:none;border-bottom:1px solid rgba(0,240,255,.3)}
+.help-body a:hover{border-color:#00f0ff}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.174.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="intro"></div>
+<div id="scene-fade"></div>
+<div id="app"></div>
+
+<div class="ui-layer">
+  <div class="frame-corners"></div>
+  <div class="header">
+    <div class="title-box">
+      <a href="/" class="nav-brand">
+        <img class="nav-brand__logo" src="cequal-logo.png" alt="C=" />
+        <span class="nav-brand__name">GRANTED.<span class="nav-brand__caret"></span></span>
+      </a>
+      <p>careful what you wish for</p>
+    </div>
+    <div class="status">
+      DJINN.AWAKE<br>
+      WISHES: <span id="stat-wishes" style="color:#aa88ff">0</span><br>
+      ESCAPED: <span id="stat-escaped" style="color:#00f0ff">0</span><br>
+      <span class="support-link" id="btn-donate-header">SUPPORT ◈</span>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hint" id="hint">choose your words wisely</div>
+    <div class="footer-btns">
+      <button class="footer-btn" id="btn-donate">SUPPORT</button>
+      <button class="footer-btn" id="btn-help">HELP</button>
+      <button class="footer-btn" id="btn-credits">CREDITS</button>
+      <button class="footer-btn" id="btn-settings">API</button>
+      <button class="footer-btn" id="gfx-toggle">GFX: HIGH</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-area">
+  <div class="state active" id="s-idle">
+    <div class="wish-cta" id="btn-start">
+      <span class="cta-main">MAKE A WISH</span>
+      <span class="cta-sub">if you dare</span>
+    </div>
+  </div>
+
+  <div class="state" id="s-input">
+    <div class="input-box">
+      <label class="input-label">speak your desire</label>
+      <textarea id="wish-text" maxlength="200" rows="3" placeholder="I wish for..."></textarea>
+      <div class="input-footer">
+        <span class="char-count"><span id="char-num">0</span> / 200</span>
+        <button class="btn" id="btn-grant" disabled>GRANT IT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="state" id="s-thinking">
+    <div class="thinking">
+      <span class="thinking-label">the djinn considers your words</span>
+      <span class="thinking-dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+    </div>
+  </div>
+
+  <div class="state" id="s-result">
+    <div class="result-box">
+      <div class="narration" id="r-narration"></div>
+      <div class="result-divider"></div>
+      <div class="verdict-row" id="r-verdict-row">
+        <span class="verdict-badge" id="r-verdict"></span>
+      </div>
+      <div class="detail-row" id="r-loophole-row">
+        <div class="loophole"><span class="loophole-label">EXPLOITED:</span><span id="r-loophole"></span></div>
+      </div>
+      <div class="detail-row" id="r-rating-row">
+        <div class="rating-row">
+          <span class="rating-label">STRETCH</span>
+          <div class="rating-bar"><div class="rating-fill" id="r-fill"></div></div>
+          <span class="rating-num" id="r-rating-num"></span>
+        </div>
+      </div>
+      <div class="btn-row" id="r-btn-row">
+        <button class="btn" id="btn-again">WISH AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="state" id="s-error">
+    <div class="error-box">
+      <p class="error-text" id="error-msg">The Djinn's power falters... try again.</p>
+      <button class="btn" id="btn-retry">TRY AGAIN</button>
+    </div>
+  </div>
+</div>
+
+<div class="donate-overlay" id="donate-overlay">
+  <div class="donate-modal">
+    <button class="donate-x" id="donate-close">&times;</button>
+    <div class="donate-title">SUPPORT THE DJINN</div>
+    <div class="donate-sub">your wish fuels his power</div>
+    <canvas class="donate-qr" id="donate-qr" width="160" height="160"></canvas>
+    <div class="donate-addr-row">
+      <span class="donate-addr" id="donate-addr"></span>
+      <button class="donate-copy" id="donate-copy">COPY</button>
+    </div>
+    <div class="donate-amounts" id="donate-amounts"></div>
+    <div class="donate-note">100% of donations go toward API keys so everyone can play for free</div>
+    <div class="donate-net">solana network only</div>
+  </div>
+</div>
+
+<div class="donate-overlay" id="settings-overlay">
+  <div class="donate-modal" style="width:min(90vw,400px)">
+    <button class="donate-x" id="settings-close">&times;</button>
+    <div class="donate-title">API SETTINGS</div>
+    <div class="donate-sub">use your own key or play free</div>
+    <div class="settings-body">
+      <div class="settings-row">
+        <label class="settings-label">PROVIDER</label>
+        <select class="settings-select" id="cfg-provider">
+          <option value="gemini-free">Gemini (Free — Default)</option>
+          <option value="gemini">Gemini (Your Key)</option>
+          <option value="openai">OpenAI (Your Key)</option>
+          <option value="anthropic">Anthropic (Your Key)</option>
+        </select>
+      </div>
+      <div class="settings-row" id="cfg-key-row" style="display:none">
+        <label class="settings-label">API KEY</label>
+        <input type="password" class="settings-input" id="cfg-key" placeholder="paste your key" />
+      </div>
+      <div class="settings-row" id="cfg-model-row" style="display:none">
+        <label class="settings-label">MODEL</label>
+        <input type="text" class="settings-input" id="cfg-model" placeholder="model name" />
+      </div>
+      <button class="btn" id="cfg-save" style="margin-top:16px;width:100%">SAVE</button>
+      <div class="settings-note" id="cfg-status"></div>
+    </div>
+  </div>
+</div>
+
+<div class="donate-overlay" id="credits-overlay">
+  <div class="donate-modal" style="width:min(92vw,440px);max-height:80vh;overflow-y:auto">
+    <button class="donate-x" id="credits-close">&times;</button>
+    <div class="donate-title">CREDITS</div>
+    <div class="donate-sub">those who shaped the djinn</div>
+    <div class="help-body">
+      <div class="help-section">
+        <div class="help-heading">GAME</div>
+        <p><strong style="color:#fff">GRANTED.</strong> — a C= production</p>
+        <p>Game design, system architecture, and integration by <strong style="color:#00f0ff">C=</strong></p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">THE DJINN — Sacred Geometry Construct</div>
+        <p>Ethereal octahedron construct with energy tubes, holographic faces, orbital rings, and shader-driven core. Adapted from a sacred geometry energy matrix prototype.</p>
+        <p>Original concept: <a href="https://codepen.io/VoXelo/full/myOPezP" target="_blank" rel="noopener" style="color:#00f0ff">VoXelo on CodePen</a></p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">THE GALAXY — Volumetric Spiral Background</div>
+        <p>Hubble-style spiral galaxy with FBM nebula clouds, rejection-sampled spiral arm particles, HII star-forming regions, dust lane silhouettes, oblate halo population, and billboarded galactic core.</p>
+        <p>Spiral arm math inspired by <a href="https://github.com/MRGRAVITY817/threejs-spiral-galaxy" target="_blank" rel="noopener" style="color:#00f0ff">MRGRAVITY817/threejs-spiral-galaxy</a></p>
+        <p>Shader galaxy reference from <a href="https://github.com/AmitDigga/threejs-galaxy-shader" target="_blank" rel="noopener" style="color:#00f0ff">AmitDigga/threejs-galaxy-shader</a></p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">THE INTRO — Hyperspace Flythrough</div>
+        <p>Volumetric terrain raymarcher with FBM noise, cinematic tone mapping, and deceleration sequence. Full-screen shader quad rendered on a separate orthographic pass.</p>
+        <p>Shader by <a href="https://www.shadertoy.com/" target="_blank" rel="noopener" style="color:#00f0ff">Shadertoy</a> community, adapted for Three.js</p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">POWERED BY</div>
+        <p><a href="https://threejs.org/" target="_blank" rel="noopener" style="color:#00f0ff">Three.js</a> — 3D engine</p>
+        <p><a href="https://ai.google.dev/" target="_blank" rel="noopener" style="color:#00f0ff">Gemini API</a> — default AI provider</p>
+        <p><a href="https://vercel.com/font" target="_blank" rel="noopener" style="color:#00f0ff">Geist</a> — typography by Vercel</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="donate-overlay" id="help-overlay">
+  <div class="donate-modal" style="width:min(92vw,440px);max-height:80vh;overflow-y:auto">
+    <button class="donate-x" id="help-close">&times;</button>
+    <div class="donate-title">HOW TO PLAY</div>
+    <div class="donate-sub">outsmart an ancient entity</div>
+    <div class="help-body">
+      <div class="help-section">
+        <div class="help-heading">THE GAME</div>
+        <p>You make a wish. The Djinn grants it — exactly as worded. Then it exploits every gap, ambiguity, and missing qualifier to make the outcome devastating.</p>
+        <p>Your goal: craft a wish so airtight the Djinn can't find a loophole. If its twist is a stretch (8+/10), you win.</p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">TIPS</div>
+        <p>Be specific. "I wish for money" leaves gaps — HOW you get it, legality, timing, consequences. The Djinn exploits what you forgot to say.</p>
+        <p>You have 200 characters. Every word matters.</p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">FREE API KEY (UNLIMITED PLAYS)</div>
+        <p>The game runs on a shared API key with limited uses. Get your own free key for unlimited plays:</p>
+        <ol>
+          <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#00f0ff">aistudio.google.com/apikey</a></li>
+          <li>Sign in with your Google account</li>
+          <li>Click <strong style="color:#fff">Create API Key</strong></li>
+          <li>Copy the key (starts with <strong style="color:#fff">AIza...</strong>)</li>
+          <li>Click <strong style="color:#aa88ff">API</strong> in the footer below</li>
+          <li>Select <strong style="color:#fff">Gemini (Your Key)</strong></li>
+          <li>Paste your key and hit <strong style="color:#fff">SAVE</strong></li>
+        </ol>
+        <p>That's it — free, unlimited, takes 30 seconds.</p>
+      </div>
+      <div class="help-section">
+        <div class="help-heading">OTHER PROVIDERS</div>
+        <p>You can also use your own OpenAI or Anthropic key. Click <strong style="color:#aa88ff">API</strong>, select your provider, paste your key.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ── INTRO — phase 1: hyperspace shader, phase 2: camera approach ── */
+const HYPER_DURATION = 1.8;
+const APPROACH_DURATION = 3.0;
+const INTRO_FROM = new THREE.Vector3(2, 4, 55);
+const INTRO_TO = new THREE.Vector3(0, 1.4, 9);
+let introPhase = 'hyper';
+let approachTime = 0;
+let introDone = false;
+
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+/* Phase 1: hyperspace shader on its own canvas */
+{
+  const el = document.getElementById('intro');
+  const iR = new THREE.WebGLRenderer({ antialias: false });
+  iR.setSize(innerWidth, innerHeight);
+  iR.setPixelRatio(Math.min(devicePixelRatio, 2));
+  el.appendChild(iR.domElement);
+
+  const iS = new THREE.Scene();
+  const iC = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  iC.position.z = 1;
+
+  const iM = new THREE.ShaderMaterial({
+    uniforms: {
+      iTime: { value: 0 },
+      iResolution: { value: new THREE.Vector2(innerWidth * iR.getPixelRatio(), innerHeight * iR.getPixelRatio()) },
+      uSpeed: { value: 16.0 },
+      uTerrainHeight: { value: 0.5 },
+      uFogStepSize: { value: 1.9 },
+      uNoiseFreq: { value: 2.0 },
+      uNoiseAmp: { value: 0.27 },
+      uColorPhase: { value: new THREE.Vector3(1.2, 2.4, 4.0) },
+      uFade: { value: 0.0 }
+    },
+    vertexShader: `void main(){ gl_Position = vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform float iTime, uSpeed, uTerrainHeight, uFogStepSize, uNoiseFreq, uNoiseAmp, uFade;
+      uniform vec2 iResolution; uniform vec3 uColorPhase;
+      float hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+      vec2 rotate(vec2 v,float t){ float s=sin(t),c=cos(t); return mat2(c,-s,s,c)*v; }
+      vec3 toneMap(vec3 c){
+        mat3 m1=mat3(.59719,.176,.0284,.35458,.90834,.13383,.04823,.01566,.83777);
+        mat3 m2=mat3(1.60475,-.10208,-.00327,-.53108,1.10813,-.07276,-.07367,-.00605,1.07602);
+        vec3 v=m1*c; vec3 a=v*(v+-.3254214)-.000090537; vec3 b=v*(.973729*v+.342951)+.018081;
+        return m2*(a/b);
+      }
+      float hash(float n){ return fract(sin(n)*43758.7253); }
+      float valueNoise(vec3 x){
+        vec3 p=floor(x),f=fract(x); f=f*f*(3.-2.*f); float n=p.x+p.y*157.+113.*p.z;
+        return mix(mix(mix(hash(n),hash(n+1.),f.x),mix(hash(n+157.),hash(n+158.),f.x),f.y),
+                   mix(mix(hash(n+113.),hash(n+114.),f.x),mix(hash(n+270.),hash(n+271.),f.x),f.y),f.z)*1.8+1.7;
+      }
+      float fineNoise(vec3 p){ float v=-1.1,a=uNoiseAmp; p*=uNoiseFreq;
+        for(int i=-1;i<2;i++){ v+=a*valueNoise(p); p*=1.8; a*=.9; } return v; }
+      void main(){
+        vec2 fc=gl_FragCoord.xy;
+        vec3 rp=vec3(-1.,.8,iTime*uSpeed);
+        vec2 uv=(2.*fc-iResolution.xy)/iResolution.y;
+        vec3 rd=normalize(vec3(uv,.30));
+        rd.yz=rotate(rd.yz,.76);
+        float dither=hash12(fc);
+        rp+=rd*dither*.8;
+        vec3 acc=vec3(27.2);
+        for(float i=8.8;i<52.;i++){
+          float h=fineNoise(vec3(rp.xz*.52,4.3))*uTerrainHeight;
+          float d=rp.y-h; d=max(abs(d),.40);
+          rp+=rd*d*uFogStepSize;
+          acc+=(1.+sin(i*.12+length(rp.xz*.15)+uColorPhase))/d;
+        }
+        vec3 fc2=(acc*acc)/3009.; fc2+=(dither)*0.0425;
+        vec3 mapped=toneMap(fc2);
+        gl_FragColor=vec4(mapped*(1.-uFade),1.);
+      }`
+  });
+  iS.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), iM));
+
+  const iClock = new THREE.Clock();
+
+  function hyperLoop() {
+    if (introPhase !== 'hyper') return;
+    const t = iClock.getElapsedTime();
+    iM.uniforms.iTime.value = t;
+
+    /* Decelerate speed over the duration */
+    const p = Math.min(t / HYPER_DURATION, 1);
+    iM.uniforms.uSpeed.value = 16 * (1 - p * p);
+
+    /* Fade to black in the last 0.4s */
+    const fadeStart = 1 - 0.4 / HYPER_DURATION;
+    iM.uniforms.uFade.value = p > fadeStart ? (p - fadeStart) / (1 - fadeStart) : 0;
+
+    iR.render(iS, iC);
+
+    if (p >= 1) {
+      introPhase = 'approach';
+      iR.dispose();
+      el.remove();
+      /* Fade the 3D scene in from black */
+      const sf = document.getElementById('scene-fade');
+      sf.classList.add('out');
+      sf.addEventListener('transitionend', () => sf.remove());
+      return;
+    }
+    requestAnimationFrame(hyperLoop);
+  }
+  hyperLoop();
+
+  addEventListener('resize', () => {
+    if (introPhase !== 'hyper') return;
+    iR.setSize(innerWidth, innerHeight);
+    const dpr = iR.getPixelRatio();
+    iM.uniforms.iResolution.value.set(innerWidth * dpr, innerHeight * dpr);
+  });
+}
+
+/* ── CONFIG ── */
+const DEFAULT_KEY = 'AIzaSyABBT2ShuhjxR_Gq48sVMOjjeFTUSAcbOs';
+
+const PROVIDERS = {
+  'gemini-free': { url: p => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + DEFAULT_KEY, label: 'Gemini Free' },
+  'gemini':      { url: p => 'https://generativelanguage.googleapis.com/v1beta/models/' + (p.model || 'gemini-2.5-flash') + ':generateContent?key=' + p.key, label: 'Gemini' },
+  'openai':      { url: p => 'https://api.openai.com/v1/chat/completions', label: 'OpenAI' },
+  'anthropic':   { url: p => 'https://api.anthropic.com/v1/messages', label: 'Anthropic' }
+};
+
+const apiCfg = JSON.parse(localStorage.getItem('gw_api') || 'null') || { provider: 'gemini-free', key: '', model: '' };
+const SYSTEM_PROMPT = `You are THE DJINN. You grant wishes EXACTLY as worded, then destroy the wisher through their own words.
+
+RULES:
+1. Grant the wish literally — the wisher gets what they asked for.
+2. Your twist exploits AMBIGUITY within the obvious intended meaning. "Dollars" means money, not sand dollars. "Peace" means absence of conflict, not death. Don't twist words into unrelated homophones or obscure alternate definitions — that's cheap. Find the loophole WITHIN what they clearly meant.
+3. Good twists: they asked for money but not HOW they get it (it's stolen, they're framed). They asked to be rich but not for how long. They asked to fly but not to land. The consequence lives inside the GAPS in their wish — what they forgot to specify.
+4. No random external disasters. The consequence must be a direct logical result.
+
+SELF-RATING — BE HARSH, NOT GENEROUS:
+1-3: They left an obvious gap (didn't specify timing, source, method, safety, permanence)
+4-5: Moderate gap — reasonable interpretation they should have anticipated
+6-7: You had to get creative but found a fair reading
+8-10: The wish was genuinely well-constructed. VERY rare. Most wishes are 2-5.
+
+"I wish for a million dollars" is a 2 — they didn't specify source, legality, timing, or consequences. That is NOT airtight. Stop being generous.
+
+If rating is 8+, verdict is AIRTIGHT. Otherwise CORRUPTED. Most wishes should be CORRUPTED.
+
+NARRATION — 2-3 sentences. SHOW don't tell:
+- Paint the scene. What does the wisher see, feel, lose?
+- Don't explain the loophole — let the horror speak for itself.
+- End with a gut-punch that lingers.
+
+Respond ONLY in JSON:
+{"narration":"2-3 sentences max","loophole":"one short sentence","twist_rating":number,"verdict":"CORRUPTED or AIRTIGHT"}`;
+
+/* ── GAME STATE ── */
+const stats = {
+  wishes: parseInt(localStorage.getItem('gw_w') || '0'),
+  escaped: parseInt(localStorage.getItem('gw_e') || '0')
+};
+
+const gn = { speed: 1, shift: 0, intensity: 1, bloom: 1, pulse: 1 };
+const gnT = { speed: 1, shift: 0, intensity: 1, bloom: 1, pulse: 1 };
+
+/* ── DOM ── */
+const $ = id => document.getElementById(id);
+const statWishes = $('stat-wishes');
+const statEscaped = $('stat-escaped');
+const hintEl = $('hint');
+const wishInput = $('wish-text');
+const charNum = $('char-num');
+const btnGrant = $('btn-grant');
+
+function updateStats() {
+  statWishes.textContent = stats.wishes;
+  statEscaped.textContent = stats.escaped;
+}
+updateStats();
+
+function setUI(name) {
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  $('s-' + name).classList.add('active');
+  const hints = { idle: 'choose your words wisely', input: 'every word matters', thinking: 'the djinn stirs...', result: 'fate revealed', error: 'the veil thins...' };
+  hintEl.textContent = hints[name] || '';
+}
+
+function setGenie(state) {
+  const presets = {
+    idle:      { speed: 1,   shift: 0,   intensity: 1,   bloom: 1,   pulse: 1 },
+    input:     { speed: 1.1, shift: 0,   intensity: 1.1, bloom: 1.05, pulse: 1.1 },
+    thinking:  { speed: 2.2, shift: .6,  intensity: 1.7, bloom: 1.25, pulse: 1.8 },
+    corrupted: { speed: .7,  shift: .25, intensity: 1.9, bloom: 1.35, pulse: 1.4 },
+    airtight:  { speed: .35, shift: 0,   intensity: .5,  bloom: .75,  pulse: .5 }
+  };
+  Object.assign(gnT, presets[state] || presets.idle);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function typeText(el, text, speed = 22) {
+  text = String(text || '');
+  if (!text) { el.textContent = ''; return Promise.resolve(); }
+  return new Promise(resolve => {
+    el.textContent = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    el.appendChild(cursor);
+    let i = 0;
+    const iv = setInterval(() => {
+      el.insertBefore(document.createTextNode(text[i]), cursor);
+      i++;
+      if (i >= text.length) { clearInterval(iv); cursor.remove(); resolve(); }
+    }, speed);
+  });
+}
+
+async function grantWish(wish) {
+  const p = apiCfg.provider;
+  const prov = PROVIDERS[p];
+  const url = prov.url(apiCfg);
+  const prompt = 'The mortal\'s wish: "' + wish + '"';
+  let res, text;
+
+  if (p === 'gemini-free' || p === 'gemini') {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0.95, maxOutputTokens: 8192 }
+      })
+    });
+    if (!res.ok) { const b = await res.text().catch(() => ''); throw new Error('HTTP ' + res.status + ': ' + b.slice(0, 200)); }
+    const data = await res.json();
+    text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  } else if (p === 'openai') {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiCfg.key },
+      body: JSON.stringify({
+        model: apiCfg.model || 'gpt-4o-mini',
+        messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: prompt }],
+        temperature: 0.95,
+        response_format: { type: 'json_object' }
+      })
+    });
+    if (!res.ok) { const b = await res.text().catch(() => ''); throw new Error('HTTP ' + res.status + ': ' + b.slice(0, 200)); }
+    const data = await res.json();
+    text = data.choices?.[0]?.message?.content;
+
+  } else if (p === 'anthropic') {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiCfg.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: apiCfg.model || 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!res.ok) { const b = await res.text().catch(() => ''); throw new Error('HTTP ' + res.status + ': ' + b.slice(0, 200)); }
+    const data = await res.json();
+    text = data.content?.[0]?.text;
+  }
+
+  console.log('RAW RESPONSE:', text);
+  if (!text) throw new Error('empty response');
+  const obj = JSON.parse(text);
+  if (!obj.narration || !obj.verdict) throw new Error('missing fields: ' + Object.keys(obj).join(','));
+  obj.loophole = obj.loophole || 'unknown';
+  obj.twist_rating = typeof obj.twist_rating === 'number' ? obj.twist_rating : 5;
+  return obj;
+}
+
+async function submitWish() {
+  const wish = wishInput.value.trim();
+  if (!wish) return;
+  btnGrant.disabled = true;
+  setUI('thinking');
+  setGenie('thinking');
+  try {
+    const result = await grantWish(wish);
+    const won = result.verdict === 'AIRTIGHT';
+    await showResult(result, won);
+    stats.wishes++;
+    if (won) stats.escaped++;
+    localStorage.setItem('gw_w', stats.wishes);
+    localStorage.setItem('gw_e', stats.escaped);
+    updateStats();
+  } catch (e) {
+    console.error('WISH ERROR:', e);
+    $('error-msg').textContent = '[' + e.message.slice(0, 150) + ']';
+    setUI('error');
+    setGenie('idle');
+  }
+}
+
+async function showResult(result, won) {
+  const narration = $('r-narration');
+  const verdictRow = $('r-verdict-row');
+  const verdictBadge = $('r-verdict');
+  const loopholeRow = $('r-loophole-row');
+  const loopholeText = $('r-loophole');
+  const ratingRow = $('r-rating-row');
+  const ratingFill = $('r-fill');
+  const ratingNum = $('r-rating-num');
+  const btnRow = $('r-btn-row');
+
+  verdictRow.classList.remove('show');
+  loopholeRow.classList.remove('show');
+  ratingRow.classList.remove('show');
+  btnRow.classList.remove('show');
+  verdictBadge.classList.remove('corrupted', 'airtight', 'stamp');
+  ratingFill.style.width = '0';
+
+  setUI('result');
+  setGenie(won ? 'airtight' : 'corrupted');
+
+  await typeText(narration, result.narration, 25);
+  await delay(400);
+
+  verdictBadge.textContent = result.verdict;
+  verdictBadge.classList.add(won ? 'airtight' : 'corrupted', 'stamp');
+  verdictRow.classList.add('show');
+  await delay(500);
+
+  loopholeText.textContent = result.loophole;
+  loopholeRow.classList.add('show');
+  await delay(300);
+
+  const rating = Math.max(1, Math.min(10, result.twist_rating || 5));
+  ratingFill.style.width = (rating * 10) + '%';
+  ratingNum.textContent = rating + '/10';
+  ratingRow.classList.add('show');
+  await delay(400);
+
+  btnRow.classList.add('show');
+}
+
+/* ── EVENT LISTENERS ── */
+$('btn-start').addEventListener('click', () => { setUI('input'); setGenie('input'); wishInput.value = ''; charNum.textContent = '0'; btnGrant.disabled = true; setTimeout(() => wishInput.focus(), 300); });
+wishInput.addEventListener('input', () => { charNum.textContent = wishInput.value.length; btnGrant.disabled = wishInput.value.trim().length === 0; });
+btnGrant.addEventListener('click', submitWish);
+wishInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !btnGrant.disabled) { e.preventDefault(); submitWish(); } });
+$('btn-again').addEventListener('click', () => { setUI('input'); setGenie('input'); wishInput.value = ''; charNum.textContent = '0'; btnGrant.disabled = true; setTimeout(() => wishInput.focus(), 300); });
+$('btn-retry').addEventListener('click', () => { setUI('input'); setGenie('input'); });
+
+/* ── DONATE ── */
+const WALLET = 'H4Zm6hWTHsa6JsWrAy7smoRJk5zNjrd1Gc7dZyKEj1LH';
+const SOL_PAY = 'solana:' + WALLET + '?label=GRANTED.&message=Support%20the%20Djinn';
+const donateOverlay = $('donate-overlay');
+const donateQR = $('donate-qr');
+const donateAddr = $('donate-addr');
+const donateCopy = $('donate-copy');
+const donateAmounts = $('donate-amounts');
+let qrDone = false;
+
+donateAddr.textContent = WALLET;
+
+[0.1, 0.5, 1, 5].forEach(amt => {
+  const b = document.createElement('button');
+  b.className = 'donate-amt';
+  b.textContent = amt + ' SOL';
+  b.addEventListener('click', () => {
+    navigator.clipboard.writeText(WALLET).then(() => {
+      donateCopy.textContent = 'COPIED';
+      b.style.borderColor = 'rgba(0,240,255,.6)';
+      b.style.color = '#00f0ff';
+      setTimeout(() => { donateCopy.textContent = 'COPY'; b.style.borderColor = ''; b.style.color = ''; }, 2000);
+    }).catch(() => {});
+  });
+  donateAmounts.appendChild(b);
+});
+
+$('btn-donate').addEventListener('click', openDonate);
+
+function openDonate() {
+  donateOverlay.classList.add('open');
+  if (!qrDone) {
+    import('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm').then(QR => {
+      const toCanvas = (QR.default && QR.default.toCanvas) || QR.toCanvas;
+      toCanvas(donateQR, SOL_PAY, { width: 160, margin: 1, color: { dark: '#00f0ffff', light: '#00000000' } });
+      qrDone = true;
+    }).catch(() => { donateQR.style.display = 'none'; });
+  }
+}
+
+$('donate-close').addEventListener('click', () => donateOverlay.classList.remove('open'));
+donateOverlay.addEventListener('click', e => { if (e.target === donateOverlay) donateOverlay.classList.remove('open'); });
+$('btn-donate-header').addEventListener('click', openDonate);
+
+donateCopy.addEventListener('click', () => {
+  navigator.clipboard.writeText(WALLET).then(() => {
+    donateCopy.textContent = 'COPIED';
+    setTimeout(() => donateCopy.textContent = 'COPY', 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = WALLET; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    donateCopy.textContent = 'COPIED';
+    setTimeout(() => donateCopy.textContent = 'COPY', 2000);
+  });
+});
+
+/* ── CREDITS ── */
+const creditsOverlay = $('credits-overlay');
+$('btn-credits').addEventListener('click', () => creditsOverlay.classList.add('open'));
+$('credits-close').addEventListener('click', () => creditsOverlay.classList.remove('open'));
+creditsOverlay.addEventListener('click', e => { if (e.target === creditsOverlay) creditsOverlay.classList.remove('open'); });
+
+/* ── HELP ── */
+const helpOverlay = $('help-overlay');
+$('btn-help').addEventListener('click', () => helpOverlay.classList.add('open'));
+$('help-close').addEventListener('click', () => helpOverlay.classList.remove('open'));
+helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
+
+/* ── SETTINGS ── */
+const settingsOverlay = $('settings-overlay');
+const cfgProvider = $('cfg-provider');
+const cfgKey = $('cfg-key');
+const cfgModel = $('cfg-model');
+const cfgKeyRow = $('cfg-key-row');
+const cfgModelRow = $('cfg-model-row');
+const cfgStatus = $('cfg-status');
+
+const MODEL_DEFAULTS = { 'gemini-free': '', 'gemini': 'gemini-2.5-flash', 'openai': 'gpt-4o-mini', 'anthropic': 'claude-sonnet-4-20250514' };
+
+function updateSettingsUI() {
+  const needsKey = cfgProvider.value !== 'gemini-free';
+  cfgKeyRow.style.display = needsKey ? '' : 'none';
+  cfgModelRow.style.display = needsKey ? '' : 'none';
+  if (!cfgModel.value) cfgModel.placeholder = MODEL_DEFAULTS[cfgProvider.value] || 'model name';
+}
+
+cfgProvider.value = apiCfg.provider;
+cfgKey.value = apiCfg.key;
+cfgModel.value = apiCfg.model;
+updateSettingsUI();
+
+cfgProvider.addEventListener('change', updateSettingsUI);
+
+$('btn-settings').addEventListener('click', () => { settingsOverlay.classList.add('open'); cfgStatus.textContent = ''; });
+$('settings-close').addEventListener('click', () => settingsOverlay.classList.remove('open'));
+settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('open'); });
+
+$('cfg-save').addEventListener('click', () => {
+  const prov = cfgProvider.value;
+  if (prov !== 'gemini-free' && !cfgKey.value.trim()) { cfgStatus.textContent = 'API key required'; cfgStatus.style.color = '#ff5566'; return; }
+  apiCfg.provider = prov;
+  apiCfg.key = cfgKey.value.trim();
+  apiCfg.model = cfgModel.value.trim() || MODEL_DEFAULTS[prov] || '';
+  localStorage.setItem('gw_api', JSON.stringify(apiCfg));
+  cfgStatus.textContent = 'saved — using ' + PROVIDERS[prov].label;
+  cfgStatus.style.color = '#00f0ff';
+  setTimeout(() => settingsOverlay.classList.remove('open'), 1200);
+});
+
+/* ── THREE.JS — ETHEREAL DJINN ── */
+const appEl = document.getElementById('app');
+const gfxBtn = $('gfx-toggle');
+let gfxMode = localStorage.getItem('gw_gfx') || 'high';
+let gfxRunning = false;
+
+const C = {
+  cyan: new THREE.Color(0x00f0ff),
+  blue: new THREE.Color(0x1133ff),
+  violet: new THREE.Color(0xaa44ff),
+  gold: new THREE.Color(0xffcc66),
+  core: new THREE.Color(0xccddff),
+  deepV: new THREE.Color(0x7722ff),
+  white: new THREE.Color(0xffffff),
+  ominA: new THREE.Color(0xff4400),
+  ominB: new THREE.Color(0xff8800)
+};
+
+const U = { uTime: { value: 0 }, uFlicker: { value: 1 } };
+const clock = new THREE.Clock();
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.82;
+appEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x020208, 0.025);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
+camera.position.copy(INTRO_FROM);
+camera.fov = 55;
+camera.updateProjectionMatrix();
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.5;
+controls.enablePan = false;
+controls.minDistance = 5;
+controls.maxDistance = 16;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.3;
+controls.enabled = false;
+controls.target.set(0, 0, 0);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.0, 0.55, 0.42);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
+/* Shader materials */
+const tubeMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: U.uTime, uColorA: { value: C.violet.clone() }, uColorB: { value: C.gold.clone() }, uFlicker: U.uFlicker },
+  vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+    void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=-mv.xyz; gl_Position=projectionMatrix*mv; }`,
+  fragmentShader: `uniform float uTime,uFlicker; uniform vec3 uColorA,uColorB; varying vec2 vUv; varying vec3 vN,vV;
+    void main(){
+      float fr=pow(1.-abs(dot(normalize(vV),normalize(vN))),2.5);
+      float tr=smoothstep(.12,0.,abs(fract(vUv.y*3.-uTime*1.5)-.5)-.1);
+      float fi=.5+.5*sin(vUv.y*40.-uTime*10.);
+      float gate=step(.4,sin(uTime*5.)*.5+.5);
+      float burst=smoothstep(.8,1.,sin(uTime*15.)*.5+.5);
+      float pu=max(gate*.35,burst)*uFlicker;
+      float a=.06+fr*.38+tr*.45+fi*pu*.18;
+      vec3 col=mix(uColorA,uColorB,vUv.y+sin(uTime)*.2);
+      col=mix(col,vec3(1.),tr*.5);
+      gl_FragColor=vec4(col*.88,a);
+    }`
+});
+
+const faceMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: U.uTime, uColorA: { value: C.blue.clone() }, uColorB: { value: C.cyan.clone() } },
+  vertexShader: `varying vec3 vN,vW,vV;
+    void main(){ vN=normalize(normalMatrix*normal); vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vV=-mv.xyz; gl_Position=projectionMatrix*mv; }`,
+  fragmentShader: `uniform float uTime; uniform vec3 uColorA,uColorB; varying vec3 vN,vW,vV;
+    void main(){
+      float fr=pow(1.-abs(dot(normalize(vV),normalize(vN))),1.5);
+      float sc=smoothstep(.82,1.,sin(vW.y*55.-uTime*12.)*.5+.5);
+      float wv=sin(length(vW.xz)*5.-uTime*2.5)*.5+.5;
+      vec3 col=mix(uColorA,uColorB,wv+fr*.5);
+      float a=(fr*.1+sc*.06+wv*.03)*.55;
+      gl_FragColor=vec4(col,a);
+    }`
+});
+
+const coreMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: true,
+  uniforms: { uTime: U.uTime, uColorA: { value: C.core.clone() }, uColorB: { value: C.deepV.clone() }, uColorC: { value: C.white.clone() } },
+  vertexShader: `varying vec3 vN,vW,vV;
+    void main(){ vN=normalize(normalMatrix*normal); vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vV=-mv.xyz; gl_Position=projectionMatrix*mv; }`,
+  fragmentShader: `uniform float uTime; uniform vec3 uColorA,uColorB,uColorC; varying vec3 vN,vW,vV;
+    void main(){
+      float rim=pow(1.-abs(dot(normalize(vV),normalize(vN))),2.5);
+      float wv=sin((vW.x+vW.y)*6.+uTime*2.)*.5+.5;
+      float breath=sin(uTime*1.5)*.5+.5;
+      vec3 col=mix(uColorA,uColorB,wv*.55);
+      col=mix(col,uColorC,rim*.55+breath*.15);
+      gl_FragColor=vec4(col,.85+rim*.15);
+    }`
+});
+
+/* Geometry helpers */
+const masterGrp = new THREE.Group();
+const outerGrp = new THREE.Group();
+const innerGrp = new THREE.Group();
+masterGrp.add(outerGrp, innerGrp);
+scene.add(masterGrp);
+
+function makeTube(a, b, r, mat) {
+  const d = new THREE.Vector3().subVectors(b, a);
+  const len = d.length();
+  const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(.5);
+  const g = new THREE.CylinderGeometry(r, r, len, 8, 1, true);
+  g.rotateX(Math.PI * .5);
+  const m = new THREE.Mesh(g, mat);
+  m.position.copy(mid);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d.normalize());
+  return m;
+}
+
+function makeNode(pos, color, s = 1) {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.07 * s, 12, 12), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .7, blending: THREE.AdditiveBlending, depthWrite: false })));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.22 * s, 12, 12), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .12, blending: THREE.AdditiveBlending, depthWrite: false })));
+  g.position.copy(pos);
+  g.userData = { phase: Math.random() * Math.PI * 2, base: s };
+  return g;
+}
+
+function makeRing(r, color, op = .3) {
+  const pts = new THREE.EllipseCurve(0, 0, r, r, 0, Math.PI * 2, false, 0).getPoints(180).map(p => new THREE.Vector3(p.x, p.y, 0));
+  return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
+}
+
+/* Build construct */
+const R = 2.5, IS = .45;
+const ov = {
+  top: new THREE.Vector3(0, R, 0), bottom: new THREE.Vector3(0, -R, 0),
+  left: new THREE.Vector3(-R, 0, 0), right: new THREE.Vector3(R, 0, 0),
+  front: new THREE.Vector3(0, 0, R), back: new THREE.Vector3(0, 0, -R)
+};
+const iv = {};
+for (const k in ov) iv[k] = ov[k].clone().multiplyScalar(IS);
+
+const edges = [
+  [ov.top, ov.left], [ov.top, ov.right], [ov.top, ov.front], [ov.top, ov.back],
+  [ov.bottom, ov.left], [ov.bottom, ov.right], [ov.bottom, ov.front], [ov.bottom, ov.back],
+  [ov.left, ov.front], [ov.front, ov.right], [ov.right, ov.back], [ov.back, ov.left]
+];
+const iEdges = [
+  [iv.top, iv.left], [iv.top, iv.right], [iv.top, iv.front], [iv.top, iv.back],
+  [iv.bottom, iv.left], [iv.bottom, iv.right], [iv.bottom, iv.front], [iv.bottom, iv.back],
+  [iv.left, iv.front], [iv.front, iv.right], [iv.right, iv.back], [iv.back, iv.left]
+];
+
+const nodes = [], orbs = [];
+
+/* Outer tubes */
+edges.forEach(([a, b]) => outerGrp.add(makeTube(a, b, .014, tubeMat)));
+
+/* Inner tubes */
+const iTubeMat = tubeMat.clone();
+iTubeMat.uniforms = { uTime: U.uTime, uColorA: { value: C.blue.clone() }, uColorB: { value: C.cyan.clone() }, uFlicker: U.uFlicker };
+iEdges.forEach(([a, b]) => innerGrp.add(makeTube(a, b, .009, iTubeMat)));
+
+/* Sacred connections */
+const connMat = tubeMat.clone();
+connMat.uniforms = { uTime: U.uTime, uColorA: { value: C.violet.clone() }, uColorB: { value: C.cyan.clone() }, uFlicker: U.uFlicker };
+for (const k in ov) masterGrp.add(makeTube(ov[k], iv[k], .004, connMat));
+
+/* Faces */
+const outerFace = new THREE.Mesh(new THREE.OctahedronGeometry(R * .99, 0), faceMat);
+outerGrp.add(outerFace);
+const iFaceMat = faceMat.clone();
+iFaceMat.uniforms = { uTime: U.uTime, uColorA: { value: C.violet.clone() }, uColorB: { value: C.gold.clone() } };
+const innerFace = new THREE.Mesh(new THREE.OctahedronGeometry(R * IS * .98, 0), iFaceMat);
+innerGrp.add(innerFace);
+
+/* Wireframes */
+outerGrp.add(new THREE.LineSegments(new THREE.WireframeGeometry(outerFace.geometry), new THREE.LineBasicMaterial({ color: 0xaa88ff, transparent: true, opacity: .07, blending: THREE.AdditiveBlending })));
+innerGrp.add(new THREE.LineSegments(new THREE.WireframeGeometry(innerFace.geometry), new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: .14, blending: THREE.AdditiveBlending })));
+
+/* Nodes */
+for (const k in ov) { const n = makeNode(ov[k], C.violet, 1.1); outerGrp.add(n); nodes.push(n); }
+for (const k in iv) { const n = makeNode(iv[k], C.core, .7); innerGrp.add(n); nodes.push(n); }
+
+/* Core */
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.4, 3), coreMat);
+innerGrp.add(core);
+const coreWire = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.46, 2)), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: .3, blending: THREE.AdditiveBlending, depthWrite: false }));
+innerGrp.add(coreWire);
+const coreHalo = new THREE.Mesh(new THREE.SphereGeometry(.78, 32, 32), new THREE.MeshBasicMaterial({ color: C.core, transparent: true, opacity: .05, blending: THREE.AdditiveBlending, depthWrite: false }));
+innerGrp.add(coreHalo);
+
+/* Rings */
+const rings = [];
+const rA = makeRing(.7, 0xaa88ff, .4); rA.rotation.x = Math.PI * .5;
+const rB = makeRing(.92, 0x7722ff, .28); rB.rotation.y = Math.PI * .5;
+const rC = makeRing(1.12, 0x00f0ff, .2); rC.rotation.z = Math.PI * .25;
+innerGrp.add(rA, rB, rC);
+rings.push(rA, rB, rC);
+
+/* Lights */
+const coreLight = new THREE.PointLight(0xccddff, 2.5, 7, 2);
+innerGrp.add(coreLight);
+const vLight = new THREE.PointLight(0x7722ff, 1.2, 8, 2.4);
+vLight.position.set(.85, .6, .75);
+innerGrp.add(vLight);
+scene.add(new THREE.PointLight(0x00f0ff, 0.8, 12, 2)).position.set(-3.4, 2.2, 4.4);
+scene.add(new THREE.PointLight(0xaa66ff, 0.5, 12, 2)).position.set(4.4, -2.4, 3.2);
+
+/* Orbs */
+edges.forEach((edge, i) => {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.05, 10, 10), new THREE.MeshBasicMaterial({ color: 0xffffff })));
+  const gl = new THREE.Mesh(new THREE.SphereGeometry(.13, 10, 10), new THREE.MeshBasicMaterial({ color: C.violet, transparent: true, opacity: .35, blending: THREE.AdditiveBlending, depthWrite: false }));
+  g.add(gl);
+  outerGrp.add(g);
+  orbs.push({ mesh: g, glow: gl.material, a: edge[0], b: edge[1], speed: .18 + Math.random() * .25, offset: Math.random() * Math.PI * 2, dir: i % 2 === 0 ? 1 : -1 });
+});
+
+/* Particles */
+const pCount = 1600;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(pCount * 3), pScale = new Float32Array(pCount), pCMix = new Float32Array(pCount);
+for (let i = 0; i < pCount; i++) {
+  const r = .4 + Math.pow(Math.random(), 2) * 4.2;
+  const th = Math.random() * Math.PI * 2;
+  const y = (Math.random() - .5) * (1 / r) * 2.2;
+  pPos[i * 3] = Math.cos(th) * r; pPos[i * 3 + 1] = y; pPos[i * 3 + 2] = Math.sin(th) * r;
+  pScale[i] = Math.random(); pCMix[i] = Math.random();
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute('aScale', new THREE.BufferAttribute(pScale, 1));
+pGeo.setAttribute('aColorMix', new THREE.BufferAttribute(pCMix, 1));
+
+const stardust = new THREE.Points(pGeo, new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: U.uTime, uColorA: { value: C.cyan }, uColorB: { value: C.core }, uColorC: { value: C.violet } },
+  vertexShader: `uniform float uTime; attribute float aScale,aColorMix; varying float vA,vCM;
+    void main(){
+      float d=max(length(position.xz),.001); float ang=uTime*(.4/d);
+      mat2 rot=mat2(cos(ang),-sin(ang),sin(ang),cos(ang));
+      vec3 p=position; p.xz=rot*p.xz; p.y+=sin(uTime*1.+d*3.+aScale*8.)*.04;
+      vec4 mv=modelViewMatrix*vec4(p,1.);
+      gl_PointSize=(14.*aScale+1.4)*(1./-mv.z);
+      vA=(.25+.75*sin(uTime*2.5+aScale*10.))*(1.-smoothstep(0.,5.,length(p)));
+      vCM=aColorMix; gl_Position=projectionMatrix*mv;
+    }`,
+  fragmentShader: `uniform vec3 uColorA,uColorB,uColorC; varying float vA,vCM;
+    void main(){
+      float d=length(gl_PointCoord-vec2(.5)); if(d>.5)discard;
+      float g=smoothstep(.5,0.,d);
+      vec3 col=mix(uColorA,uColorB,smoothstep(.25,.85,vCM));
+      col=mix(col,uColorC,smoothstep(.78,1.,vCM)*.4);
+      gl_FragColor=vec4(col*g,vA*g);
+    }`
+}));
+scene.add(stardust);
+
+/* ▼▼▼ GALAXY — from design handoff ▼▼▼ */
+const galaxy = new THREE.Group();
+galaxy.position.set(0, -1.5, -28);
+galaxy.rotation.x = Math.PI * 0.46;
+galaxy.rotation.z = -0.22;
+scene.add(galaxy);
+
+const C_CORE = new THREE.Color('#fff1d4'), C_BULGE = new THREE.Color('#ffd9a0');
+const C_INNER = new THREE.Color('#9ad5ff'), C_ARM = new THREE.Color('#aa44ff');
+const C_HOT = new THREE.Color('#bce6ff'), C_HII = new THREE.Color('#ff7aa8');
+const C_DEEP = new THREE.Color('#2a1660'), C_DUST = new THREE.Color('#0a0418');
+const C_GOLD = new THREE.Color('#ffcc66');
+
+const FBM_GLSL = `
+  float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+  float vnoise(vec2 p){
+    vec2 i=floor(p), f=fract(p);
+    float a=hash(i), b=hash(i+vec2(1.,0.));
+    float c=hash(i+vec2(0.,1.)), d=hash(i+vec2(1.,1.));
+    vec2 u=f*f*(3.-2.*f);
+    return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+  }
+  float fbm(vec2 p){
+    float v=0., a=0.5;
+    mat2 r=mat2(0.8,-0.6,0.6,0.8);
+    for(int i=0;i<5;i++){ v+=a*vnoise(p); p=r*p*2.03+13.1; a*=0.5; }
+    return v;
+  }
+`;
+
+const NEB_BRANCHES = 4, NEB_SPIN = 2.6;
+function makeNebula(scale, seed, opacity, hueShift, layerIdx){
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uTime: U.uTime, uSeed: { value: seed }, uOpacity: { value: opacity }, uHueShift: { value: hueShift }, uLayer: { value: layerIdx }, uCore: { value: C_INNER }, uArm: { value: C_ARM }, uDeep: { value: C_DEEP }, uDust: { value: C_DUST } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv - 0.5; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+    fragmentShader: `precision highp float; varying vec2 vUv;
+      uniform float uTime, uSeed, uOpacity, uHueShift, uLayer;
+      uniform vec3 uCore, uArm, uDeep, uDust;
+      ${FBM_GLSL}
+      float spiralMask(vec2 p, float branches, float spin, float twist){
+        float r = length(p); float a = atan(p.y, p.x);
+        float phase = a - log(max(r,0.0001))*spin - twist;
+        return pow(0.5 + 0.5*cos(phase*branches), 2.2);
+      }
+      void main(){
+        vec2 p = vUv * 2.0; float r = length(p); if (r > 1.0) discard;
+        float rot = uTime*0.04 + uSeed + (1.0 - r)*0.8;
+        float c2 = cos(rot), s2 = sin(rot); vec2 pr = mat2(c2,-s2,s2,c2) * p;
+        vec2 q = pr*2.4 + vec2(uSeed*7.3, uSeed*-3.1);
+        vec2 warp = vec2(fbm(q+uTime*0.02), fbm(q-uTime*0.025));
+        float n = fbm(q + warp*1.6);
+        float arms = spiralMask(pr, ${NEB_BRANCHES}.0, ${NEB_SPIN.toFixed(2)}, uSeed*1.7);
+        float coreF = smoothstep(0.55, 0.0, r); float falloff = smoothstep(1.0, 0.15, r);
+        float density = falloff * mix(0.25, 1.0, arms) * smoothstep(0.25, 0.75, n);
+        vec3 col = mix(uDeep, uArm, smoothstep(0.15, 0.7, falloff));
+        col = mix(col, vec3(0.6,0.83,1.0), smoothstep(0.35, 0.75, falloff)*0.55);
+        col = mix(col, uCore, coreF*0.95);
+        col += vec3(uHueShift*0.15, -uHueShift*0.05, uHueShift*0.2);
+        float dust = (1.0 - arms) * smoothstep(0.4, 0.9, n) * smoothstep(0.9, 0.2, r);
+        col -= uDust * dust * 0.6; col = max(col, 0.0);
+        float a = density * uOpacity * smoothstep(1.0, 0.85, r);
+        gl_FragColor = vec4(col * a, a);
+      }`,
+  });
+  return new THREE.Mesh(new THREE.PlaneGeometry(scale, scale, 1, 1), mat);
+}
+
+const nebulaLayers = [makeNebula(28, 1.31, 0.55, +0.10, 0), makeNebula(22, 4.77, 0.80, -0.08, 1), makeNebula(16, 9.22, 0.95, +0.05, 2)];
+nebulaLayers.forEach((m,i) => { m.renderOrder = -10+i; m.position.y = (i-1)*0.35; m.rotation.x = (i-1)*0.08; m.rotation.z = (i-1)*0.05; galaxy.add(m); });
+{ const cross = makeNebula(14, 6.18, 0.45, +0.05, 1); cross.rotation.x = Math.PI/2; cross.rotation.z = 0.4; cross.renderOrder = -7; galaxy.add(cross); nebulaLayers.push(cross); }
+
+function softDiscTexture(){
+  const s = 64, cv = document.createElement('canvas'); cv.width = cv.height = s;
+  const ctx = cv.getContext('2d'), g = ctx.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+  g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.25,'rgba(255,255,255,0.55)');
+  g.addColorStop(0.55,'rgba(255,255,255,0.12)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0,0,s,s);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const discTex = softDiscTexture();
+
+function buildArmStars({ count, branches=NEB_BRANCHES, spin=NEB_SPIN, radius=7.5, thickness=0.18, armWidth=0.32, radPow=2.4, sizeMin=0.04, sizeMax=0.16 }){
+  const pos = new Float32Array(count*3), col = new Float32Array(count*3), sz = new Float32Array(count);
+  const c = new THREE.Color(); let written = 0, attempts = 0;
+  while (written < count && attempts < count*40) {
+    attempts++;
+    const r = Math.pow(Math.random(), radPow) * radius + 0.06;
+    const branch = Math.floor(Math.random()*branches);
+    const baseAngle = (branch/branches)*Math.PI*2;
+    const armAngle = baseAngle + Math.log(Math.max(r,0.001))*spin;
+    const jitter = (Math.random()+Math.random()+Math.random()-1.5)*armWidth;
+    const ang = armAngle + jitter/Math.max(r,0.5);
+    const phase = (ang - Math.log(Math.max(r,0.001))*spin)*branches;
+    const armStrength = Math.pow(0.5+0.5*Math.cos(phase), 1.6);
+    if (Math.random() > armStrength*0.85+0.15) continue;
+    const x = Math.cos(ang)*r, z = Math.sin(ang)*r;
+    const tFall = 1.0 - r/radius;
+    const y = (Math.random()*2-1)*thickness*(0.4+tFall*1.2)*0.6;
+    const i3 = written*3; pos[i3]=x; pos[i3+1]=y; pos[i3+2]=z;
+    const t = Math.min(r/radius,1);
+    if (t<0.14) c.copy(C_CORE).lerp(C_BULGE,t/0.14);
+    else if (t<0.32) c.copy(C_BULGE).lerp(C_INNER,(t-0.14)/0.18);
+    else if (t<0.65) c.copy(C_INNER).lerp(C_ARM,(t-0.32)/0.33);
+    else c.copy(C_ARM).lerp(C_DEEP,(t-0.65)/0.35);
+    if (t>0.25 && armStrength>0.78 && Math.random()<0.04) c.copy(C_HOT);
+    if (Math.random()<0.005) c.copy(C_GOLD);
+    const v = 0.85+Math.random()*0.3;
+    col[i3]=c.r*v; col[i3+1]=c.g*v; col[i3+2]=c.b*v;
+    sz[written] = sizeMin + Math.pow(Math.random(),3)*(sizeMax-sizeMin)*(0.5+tFall);
+    written++;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0,written*3),3));
+  g.setAttribute('color', new THREE.BufferAttribute(col.subarray(0,written*3),3));
+  g.setAttribute('aSize', new THREE.BufferAttribute(sz.subarray(0,written),1));
+  return g;
+}
+
+const armMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: U.uTime, uTex: { value: discTex }, uPxScale: { value: renderer.getSize(new THREE.Vector2()).y } },
+  vertexShader: `attribute float aSize; varying vec3 vColor; varying float vDepth; uniform float uPxScale;
+    void main(){ vColor = color; vec4 mv = modelViewMatrix*vec4(position,1.0); vDepth = -mv.z;
+    gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPxScale*(1.0/max(vDepth,0.1)); }`,
+  fragmentShader: `precision highp float; uniform sampler2D uTex; varying vec3 vColor; varying float vDepth;
+    void main(){ vec4 t = texture2D(uTex, gl_PointCoord); if(t.a<0.01) discard;
+    float fog = exp(-vDepth*vDepth*0.0006); gl_FragColor = vec4(vColor*t.a, t.a)*fog; }`,
+  vertexColors: true,
+});
+
+galaxy.add(new THREE.Points(buildArmStars({ count:32000, radius:7.8, thickness:0.55, armWidth:0.55, sizeMin:0.05, sizeMax:0.22 }), armMat));
+const armCore = new THREE.Points(buildArmStars({ count:14000, radius:3.6, thickness:0.95, armWidth:0.9, radPow:1.6, sizeMin:0.03, sizeMax:0.10 }), armMat.clone());
+armCore.material.uniforms = armMat.uniforms; galaxy.add(armCore);
+
+{ /* Halo */
+  const N=6000, pos=new Float32Array(N*3), col=new Float32Array(N*3), sz=new Float32Array(N), c=new THREE.Color();
+  for(let i=0;i<N;i++){
+    const u2=Math.random()*Math.PI*2, v2=Math.acos(2*Math.random()-1), rad=Math.pow(Math.random(),1.6)*4.5+0.2;
+    pos[i*3]=Math.sin(v2)*Math.cos(u2)*rad; pos[i*3+1]=Math.cos(v2)*rad*0.55; pos[i*3+2]=Math.sin(v2)*Math.sin(u2)*rad;
+    const tint=Math.random(); if(tint<0.65)c.copy(C_BULGE); else if(tint<0.92)c.copy(C_CORE); else c.copy(C_GOLD);
+    const v3=0.55+Math.random()*0.35; col[i*3]=c.r*v3; col[i*3+1]=c.g*v3; col[i*3+2]=c.b*v3;
+    sz[i]=0.02+Math.pow(Math.random(),3)*0.08;
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.setAttribute('aSize',new THREE.BufferAttribute(sz,1));
+  const halo=new THREE.Points(g,armMat.clone()); halo.material.uniforms=armMat.uniforms; galaxy.add(halo);
+}
+{ /* HII regions */
+  const N=90, pos=new Float32Array(N*3), col=new Float32Array(N*3), sz=new Float32Array(N), c=new THREE.Color();
+  let i=0, att=0;
+  while(i<N&&att<N*40){ att++;
+    const r=1.2+Math.pow(Math.random(),0.7)*5.2, branch=Math.floor(Math.random()*NEB_BRANCHES);
+    const ang=(branch/NEB_BRANCHES)*Math.PI*2+Math.log(Math.max(r,0.001))*NEB_SPIN+(Math.random()*2-1)*0.12;
+    pos[i*3]=Math.cos(ang)*r; pos[i*3+1]=(Math.random()*2-1)*0.08; pos[i*3+2]=Math.sin(ang)*r;
+    if(Math.random()<0.3)c.copy(C_HOT); else c.copy(C_HII);
+    const v=0.85+Math.random()*0.3; col[i*3]=c.r*v; col[i*3+1]=c.g*v; col[i*3+2]=c.b*v;
+    sz[i]=0.28+Math.random()*0.55; i++;
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos.subarray(0,i*3),3));
+  g.setAttribute('color',new THREE.BufferAttribute(col.subarray(0,i*3),3)); g.setAttribute('aSize',new THREE.BufferAttribute(sz.subarray(0,i),1));
+  const hii=new THREE.Points(g,armMat.clone()); hii.material.uniforms=armMat.uniforms; galaxy.add(hii);
+}
+{ /* Dust lanes */
+  const dustMat = new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.NormalBlending,
+    uniforms:{ uTime:U.uTime, uDust:{value:C_DUST} },
+    vertexShader:`varying vec2 vUv; void main(){ vUv=uv-0.5; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+    fragmentShader:`precision highp float; varying vec2 vUv; uniform float uTime; uniform vec3 uDust;
+      ${FBM_GLSL}
+      void main(){ vec2 p=vUv*2.0; float r=length(p); if(r>1.0)discard;
+      float a=atan(p.y,p.x); float phase=a-log(max(r,0.0001))*${NEB_SPIN.toFixed(2)};
+      float gap=pow(0.5+0.5*cos(phase*${NEB_BRANCHES}.0+3.14159),2.0);
+      float n=fbm(p*4.0+uTime*0.01); float lane=gap*smoothstep(0.35,0.85,n);
+      float ring=smoothstep(0.08,0.35,r)*smoothstep(0.95,0.45,r);
+      gl_FragColor=vec4(uDust,lane*ring*0.55); }`,
+  });
+  const dust=new THREE.Mesh(new THREE.PlaneGeometry(16,16),dustMat); dust.renderOrder=5; galaxy.add(dust);
+}
+
+/* Galactic core — billboarded bulge */
+const gxCoreMat = new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  uniforms:{ uTime:U.uTime, uCore:{value:C_CORE}, uRim:{value:C_INNER}, uOuter:{value:C_ARM} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv-0.5; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`varying vec2 vUv; uniform float uTime; uniform vec3 uCore,uRim,uOuter;
+    void main(){ float r=length(vUv)*2.0; if(r>1.0)discard;
+    vec2 q=vec2(vUv.x*0.65,vUv.y)*2.0; float er=length(q);
+    float nuc=exp(-pow(er*5.0,2.0)); float halo=exp(-pow(r*1.6,1.7)); float bulge=exp(-pow(er*1.1,1.4));
+    float pulse=0.94+0.06*sin(uTime*0.5);
+    vec3 col=uCore*nuc*0.64+uRim*halo*0.21+uOuter*halo*0.07+uCore*bulge*0.10;
+    float a=(nuc*0.45+halo*0.17+bulge*0.07)*pulse;
+    gl_FragColor=vec4(col*a,a); }`,
+});
+const gxCore = new THREE.Mesh(new THREE.PlaneGeometry(7.5,5.2), gxCoreMat);
+gxCore.userData.billboard = true;
+galaxy.add(gxCore);
+
+{ /* Field stars */
+  const N=1800, pos=new Float32Array(N*3), col=new Float32Array(N*3), sz=new Float32Array(N), c=new THREE.Color();
+  for(let i=0;i<N;i++){
+    const u2=Math.random()*Math.PI*2, v2=Math.acos(2*Math.random()-1), r=30+Math.random()*40;
+    pos[i*3]=Math.sin(v2)*Math.cos(u2)*r; pos[i*3+1]=Math.cos(v2)*r*0.6; pos[i*3+2]=Math.sin(v2)*Math.sin(u2)*r-30;
+    const tint=Math.random(); if(tint<0.55)c.copy(C_CORE); else if(tint<0.85)c.copy(C_INNER); else if(tint<0.97)c.copy(C_ARM); else c.copy(C_GOLD);
+    const v3=0.6+Math.random()*0.4; col[i*3]=c.r*v3; col[i*3+1]=c.g*v3; col[i*3+2]=c.b*v3;
+    sz[i]=0.03+Math.pow(Math.random(),4)*0.18;
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.setAttribute('aSize',new THREE.BufferAttribute(sz,1));
+  const fs=new THREE.Points(g,armMat.clone()); fs.material.uniforms=armMat.uniforms; scene.add(fs);
+}
+
+galaxy.userData.tick = (time, cam) => {
+  galaxy.rotation.y = time * 0.02;
+  if (gxCore.userData.billboard) gxCore.lookAt(cam.position);
+};
+/* ▲▲▲ END GALAXY ▲▲▲ */
+
+/* Resize */
+function onResize() {
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  armMat.uniforms.uPxScale.value = innerHeight;
+}
+addEventListener('resize', onResize);
+onResize();
+
+const baseColorsA = C.violet.clone(), baseColorsB = C.gold.clone();
+
+/* ── DJINN TOUCH — angry shake + red flash ── */
+const raycaster = new THREE.Raycaster();
+const mouse2 = new THREE.Vector2();
+let angryUntil = 0;
+const angryRed = new THREE.Color(0xff1100);
+const angryOrange = new THREE.Color(0xff4400);
+
+renderer.domElement.addEventListener('click', (e) => {
+  if (!introDone) return;
+  mouse2.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse2.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse2, camera);
+  const hits = raycaster.intersectObjects(masterGrp.children, true);
+  if (hits.length > 0) {
+    angryUntil = clock.getElapsedTime() + 1.5;
+  }
+});
+
+/* ── GFX TOGGLE ── */
+function setGfx(mode) {
+  gfxMode = mode;
+  localStorage.setItem('gw_gfx', mode);
+  gfxBtn.textContent = 'GFX: ' + mode.toUpperCase();
+  if (mode === 'high') {
+    appEl.style.display = '';
+    if (!gfxRunning) { gfxRunning = true; requestAnimationFrame(animate); }
+  } else {
+    appEl.style.display = 'none';
+    gfxRunning = false;
+    introDone = true;
+    document.querySelector('.ui-layer').classList.add('visible');
+    document.querySelector('.game-area').classList.add('visible');
+  }
+}
+
+gfxBtn.addEventListener('click', () => setGfx(gfxMode === 'high' ? 'low' : 'high'));
+
+/* ── ANIMATION ── */
+let prevT = 0;
+
+function animate() {
+  if (!gfxRunning) return;
+  const time = clock.getElapsedTime();
+  const dt = Math.min(time - prevT, .1);
+  prevT = time;
+  U.uTime.value = time;
+
+  /* Phase 2: camera approach after hyperspace ends */
+  if (!introDone && introPhase === 'approach') {
+    approachTime += dt;
+    const p = Math.min(approachTime / APPROACH_DURATION, 1);
+    const e = easeOutCubic(p);
+    camera.position.lerpVectors(INTRO_FROM, INTRO_TO, e);
+    camera.fov = 55 - 10 * e;
+    camera.updateProjectionMatrix();
+    camera.lookAt(0, 0, 0);
+
+    if (p >= 1) {
+      introDone = true;
+      controls.enabled = true;
+      camera.position.copy(INTRO_TO);
+      camera.fov = 45;
+      camera.updateProjectionMatrix();
+      document.querySelector('.ui-layer').classList.add('visible');
+      document.querySelector('.game-area').classList.add('visible');
+    }
+  }
+
+  /* Lerp genie state */
+  const lk = 1 - Math.pow(.04, dt);
+  for (const k in gn) gn[k] += (gnT[k] - gn[k]) * lk;
+
+  bloomPass.strength = gn.bloom;
+
+  const gPulse = .8 + .2 * Math.sin(time * 2);
+  const surge = Math.max(0, Math.sin(time * 7.3) * .5 + .5 - .85) / .15;
+  U.uFlicker.value = gPulse + surge * 1.2 * gn.pulse;
+
+  /* Angry state from touch */
+  const angry = Math.max(0, angryUntil - time);
+  const angryT = Math.min(angry / 1.5, 1);
+  const shake = angryT * Math.sin(time * 45) * 0.15;
+  const shake2 = angryT * Math.cos(time * 38) * 0.12;
+
+  /* Color reactivity — shift ALL djinn materials red when angry */
+  const s = Math.max(gn.shift, angryT);
+  tubeMat.uniforms.uColorA.value.copy(baseColorsA).lerp(angryRed, angryT).lerp(C.ominA, gn.shift);
+  tubeMat.uniforms.uColorB.value.copy(baseColorsB).lerp(angryOrange, angryT).lerp(C.ominB, gn.shift);
+  iTubeMat.uniforms.uColorA.value.copy(C.blue).lerp(angryRed, angryT);
+  iTubeMat.uniforms.uColorB.value.copy(C.cyan).lerp(angryOrange, angryT);
+  connMat.uniforms.uColorA.value.copy(C.violet).lerp(angryRed, angryT);
+  connMat.uniforms.uColorB.value.copy(C.cyan).lerp(angryOrange, angryT);
+  faceMat.uniforms.uColorA.value.copy(C.blue).lerp(angryRed, angryT);
+  faceMat.uniforms.uColorB.value.copy(C.cyan).lerp(angryRed, angryT * .7);
+  iFaceMat.uniforms.uColorA.value.copy(C.violet).lerp(angryRed, angryT);
+  iFaceMat.uniforms.uColorB.value.copy(C.gold).lerp(angryOrange, angryT);
+  coreMat.uniforms.uColorA.value.copy(C.core).lerp(angryRed, angryT);
+  coreMat.uniforms.uColorB.value.copy(C.deepV).lerp(angryRed, angryT * .8);
+  coreMat.uniforms.uColorC.value.copy(C.white).lerp(angryOrange, angryT * .5);
+  nodes.forEach(n => {
+    n.children.forEach(c => { if (c.material) c.material.color.copy(C.violet).lerp(angryRed, angryT); });
+  });
+
+  /* Transform */
+  masterGrp.position.x = shake;
+  masterGrp.position.y = Math.sin(time * .4) * .1 + shake2;
+  const sp = gn.speed + angryT * 3;
+  outerGrp.rotation.y = time * .06 * sp;
+  outerGrp.rotation.x = Math.sin(time * .12) * .1;
+  outerGrp.rotation.z = Math.cos(time * .08) * .05;
+  innerGrp.rotation.y = -time * .15 * sp;
+  innerGrp.rotation.x = Math.cos(time * .16) * .12;
+
+  core.rotation.x = time * 1.2 * sp;
+  core.rotation.y = time * 1 * sp;
+  core.rotation.z = time * .3;
+  core.scale.setScalar(1 + Math.sin(time * 6) * .04 * gn.pulse + surge * .12);
+
+  coreWire.rotation.x = -time * .9 * sp;
+  coreWire.rotation.y = time * 1.1 * sp;
+  coreWire.scale.setScalar(1 + Math.sin(time * 5) * .03 + surge * .08);
+
+  coreHalo.scale.setScalar(1 + Math.sin(time * 2.8) * .02);
+  coreHalo.material.opacity = (.04 + Math.sin(time * 2.5) * .012) * gn.intensity;
+
+  coreLight.intensity = (1.8 + Math.sin(time * 8) * .3 + surge * .8 + angryT * 3) * gn.intensity;
+  coreLight.color.copy(C.core).lerp(angryRed, angryT);
+  vLight.intensity = (.8 + Math.sin(time * 3.5) * .3 + surge * .8 + angryT * 2) * gn.intensity;
+  vLight.color.copy(C.deepV).lerp(angryRed, angryT * .7);
+
+  rings.forEach((ring, i) => {
+    ring.rotation.x += (.003 + i * .0008) * sp;
+    ring.rotation.y += (.0025 + i * .001) * sp;
+    ring.rotation.z += (.0015 + i * .0006) * sp;
+    ring.scale.setScalar(1 + Math.sin(time * (1.5 + i) + i) * .02);
+  });
+
+  stardust.rotation.y = time * .02;
+  galaxy.userData.tick(time, camera);
+
+  nodes.forEach(n => {
+    const sc = n.userData.base * (1 + .12 * Math.sin(time * 4 + n.userData.phase) * gn.pulse);
+    n.scale.setScalar(sc);
+  });
+
+  orbs.forEach(o => {
+    const raw = (time * o.speed * sp + o.offset) % 2;
+    const t = raw > 1 ? 2 - raw : raw;
+    const pos = new THREE.Vector3().lerpVectors(o.a, o.b, o.dir === 1 ? t : 1 - t);
+    const dir = new THREE.Vector3().subVectors(o.b, o.a).normalize();
+    const up = Math.abs(dir.y) > .9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    pos.addScaledVector(new THREE.Vector3().crossVectors(dir, up).normalize(), Math.sin(time * 12 + o.offset) * .015);
+    o.mesh.position.copy(pos);
+    const fl = Math.sin(time * 8 + o.offset) * .5 + .5;
+    o.mesh.scale.setScalar(1 + fl * .4);
+    o.glow.opacity = .25 + fl * .35;
+  });
+
+  if (introDone) controls.update();
+  composer.render();
+  requestAnimationFrame(animate);
+}
+
+/* Start */
+setGfx(gfxMode);
+</script>
+</body>
+</html>
